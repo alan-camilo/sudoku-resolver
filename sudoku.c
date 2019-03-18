@@ -1,14 +1,14 @@
 #include "sudoku.h"
 #include <stddef.h>
 
-int init_empty_cells(int* board, cell_t* empty_cells) {
+int init_empty_cells(int board[BOARD_DIM][BOARD_DIM], cell_t* empty_cells) {
     int nb_empty_cells = 0;
     cell_t* current_cell = empty_cells;
     cell_t* previous_cell = NULL;
 
     for (int y = 0; y < BOARD_DIM; y++) {
         for (int x = 0; x < BOARD_DIM; x++) {
-            if (board[y * BOARD_DIM + x] == 0) {
+            if (board[y][x] == 0) {
                 nb_empty_cells++;
                 if (previous_cell != NULL) {
                     previous_cell->next = current_cell;
@@ -26,7 +26,7 @@ int init_empty_cells(int* board, cell_t* empty_cells) {
     return nb_empty_cells;
 }
 
-state_t simple_solve(int* board) {
+state_t simple_solve(int board[BOARD_DIM][BOARD_DIM]) {
     cell_t empty_cells;
     int nb_empty_cells = init_empty_cells(board, &empty_cells);
 
@@ -64,7 +64,7 @@ void increment_cell(cell_t* cell) {
     }
 }
 
-bool is_board_valid(int* board, cell_t cell) {
+bool is_board_valid(int board[BOARD_DIM][BOARD_DIM], cell_t cell) {
     if (cell.val == 0) {
         return false;
     }
@@ -74,18 +74,18 @@ bool is_board_valid(int* board, cell_t cell) {
             check_box(board, cell.val, cell.y, cell.x));
 }
 
-bool check_row(int* board, int val, int row) {
+bool check_row(int board[BOARD_DIM][BOARD_DIM], int val, int row) {
     for (int x = 0; x < BOARD_DIM; x++) {
-        if (board[row * BOARD_DIM + x] == val) {
+        if (board[row][x] == val) {
             return false;
         }
     }
     return true;
 }
 
-bool check_column(int* board, int val, int column) {
+bool check_column(int board[BOARD_DIM][BOARD_DIM], int val, int column) {
     for (int y = 0; y < BOARD_DIM; y++) {
-        if (board[y * BOARD_DIM + column] == val) {
+        if (board[y][column] == val) {
             return false;
         }
     }
@@ -93,12 +93,12 @@ bool check_column(int* board, int val, int column) {
     return true;
 }
 
-bool check_box(int* board, int val, int y, int x) {
+bool check_box(int board[BOARD_DIM][BOARD_DIM], int val, int y, int x) {
     int _y = y - (y % 3);
     int _x = x - (x % 3);    // ou encore : _y = 3 * (y / 3), _x = 3 * (x / 3);
     for (y = _y; y < (_y + 3); y++) {
         for (x = _x; x < (_x + 3); x++) {
-            if (board[y * BOARD_DIM + x] == val) {
+            if (board[y][x] == val) {
                 return false;
             }
         }

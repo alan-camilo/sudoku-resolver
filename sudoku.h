@@ -16,10 +16,10 @@ struct cell_t {
     cell_t* next;
 };
 
-state_t simple_solve(int*);
-int init_empty_cells(int*, cell_t*);
+state_t simple_solve(int [BOARD_DIM][BOARD_DIM]);
+int init_empty_cells(int [BOARD_DIM][BOARD_DIM], cell_t*);
 void increment_cell(cell_t*);
-bool is_board_valid(int*, cell_t);
-bool check_row(int*, int, int);
-bool check_column(int*, int, int);
-bool check_box(int*, int, int, int);
+bool is_board_valid(int [BOARD_DIM][BOARD_DIM], cell_t);
+bool check_row(int [BOARD_DIM][BOARD_DIM], int, int);
+bool check_column(int [BOARD_DIM][BOARD_DIM], int, int);
+bool check_box(int [BOARD_DIM][BOARD_DIM], int, int, int);
