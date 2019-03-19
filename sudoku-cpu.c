@@ -52,7 +52,7 @@ bool estValide (int grille[9][9], int position)
     if (position == 9*9)
         return true;
 
-    int i = position/9, j = position%9;
+    int i = position/9, j = position%9;    /* i: row, j: column */
 
     if (grille[i][j] != 0)
         return estValide(grille, position+1);
