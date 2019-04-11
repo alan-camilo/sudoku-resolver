@@ -94,53 +94,35 @@ bool is_board_valid(char *board, int position)
 
 /* TODO: tester */
 
-void resolve(char *board)
-{
+void resolve(char *board) {
   /* récupère index et nombre de cellules vides */
-  char empty_cell[BOARD_DIM * BOARD_DIM] = 0;
+  char empty_cell[BOARD_DIM * BOARD_DIM] = {0};
   int nb_empty_cells = get_empty_cells(empty_cell, board);
 
   /* parcourt cellules vides */
-  int i = 0;
-  while (!is_board_valid(board, i) && stack_i >= 0)
-  {
-    //printf("%d\n", i);
-    if (board[i] == 0)
-    {
-      /* incrémente cellule jusqu'à valide */
-      bool cell_state = false;
-      for (char cell_val = 1; cell_val <= CELL_VAL_MAX; cell_val++)
-      {
-        cell_state = is_cell_valid(board, i, cell_val);
-        if (cell_state)
-        {
-          board[i] = cell_val;
-          /* ajout stack */
-          stack[stack_i] = i;
-          stack_i++;
-          /* cellule suivante */
-          i++;
-          printf("ajout stack\n");
-          break;
-        }
-        else
-        {
-          /* pop stack */
-          stack_i--;
-          i = stack[stack_i];
-          board[i]++;
-          i++;
-          /* réinitialise cellule courante */
-          board[i] = 0;
-        }
+  int empty_cell_i = 0;
+  while ((empty_cell_i >= 0) && (empty_cell_i < nb_empty_cells)) {
+    /* incrémente cellule jusqu'à valide */
+    bool cell_state = false;
+    for (char cell_val = board[empty_cell_i] + 1; cell_val <= CELL_VAL_MAX;
+         cell_val++) {
+      cell_state = is_cell_valid(board, empty_cell_i, cell_val);
+      if (cell_state) {
+        /* fixe la valeur de la cellule vide */
+        board[empty_cell_i] = cell_val;
+        /* cellule vide suivante */
+        empty_cell_i++;
+        break;
       }
     }
-    else
-    {
-      /* */
-      i++;
-    } /* fin traitement cellule vide */
-  }   /* fin parcourt cellules vides */
+    /* BACKTRACKING */
+    /* if ((cell_val > CELL_VAL_MAX) && (!cell_state)) */
+    if (!cell_state) {
+      /* réinitialise cellule courante */
+      board[empty_cell_i] = 0;
+      empty_cell_i--;
+    }
+  }
 }
 
 int main(int argc, const char *argv[])
