@@ -1,6 +1,7 @@
 #include "sudoku-iterative.h"
 #include <stdbool.h>
 #include <stdio.h>
+#include <time.h>
 
 static int stack[BOARD_DIM * BOARD_DIM];
 static int stack_i = 0;
@@ -22,13 +23,15 @@ void printBoard(char *board)
     {
       printf("\n");
     }
+    if (!((i + 1) % 27)) {
+      puts("------------------");
+    }
   }
   puts("\n");
 }
 
 bool checkRow(char *board, char row, char value)
 {
-  printf("function checkRow\n\n");
   for (char column = 0; column < 9; column++)
     if (board[column + BOARD_DIM * row] == value)
       return false;
@@ -37,7 +40,6 @@ bool checkRow(char *board, char row, char value)
 
 bool checkColumn(char *board, char column, char value)
 {
-  printf("function checkColumn\n\n");
   for (char row = 0; row < 9; row++)
     if (board[column + BOARD_DIM * row] == value)
       return false;
@@ -48,12 +50,10 @@ bool checkBox(char *board, char row, char column, char value)
 {
   char _row = row - (row % 3);
   char _column = column - (column % 3);
-  printf("function checkBox\n_row = %d\n_column = %d\n\n", _row, _column);
   for (row = _row; row < _row + 3; row++)
   {
     for (column = _column; column < _column + 3; column++)
     {
-      printf("boucle for\nrow = %d\ncolumn = %d\n\n", row, column);
       if (board[column + BOARD_DIM * row] == value)
         return false;
     }
@@ -72,6 +72,13 @@ int get_empty_cells(char *empty_cell, char *board) {
       nb_empty_cells++;
     }
   }
+
+  // puts("EMPTY CELL");
+  // for (int i = 0; i < nb_empty_cells; i++) {
+  //   printf("%d ", empty_cell[i]);
+  // }
+  // puts("\n");
+
   return nb_empty_cells;
 }
 
@@ -80,7 +87,7 @@ bool is_cell_valid(char *board, int position, char value)
   char row = position / 9;
   char column = position % 9;
   //printf("function is_cell_valid\nposition = %d\nrow = %d\ncolumn = %d\nvalue = %d\n\n", position, row, column, value);
-  if (checkRow(board, row, value) && checkColumn(board, position, value) && checkBox(board, row, column, value))
+  if (checkRow(board, row, value) && checkColumn(board, column, value) && checkBox(board, row, column, value))
   {
     return true;
   }
@@ -103,13 +110,14 @@ void resolve(char *board) {
   int empty_cell_i = 0;
   while ((empty_cell_i >= 0) && (empty_cell_i < nb_empty_cells)) {
     /* incrémente cellule jusqu'à valide */
+    int position = empty_cell[empty_cell_i];
     bool cell_state = false;
-    for (char cell_val = board[empty_cell_i] + 1; cell_val <= CELL_VAL_MAX;
+    for (char cell_val = board[position] + 1; cell_val <= CELL_VAL_MAX;
          cell_val++) {
-      cell_state = is_cell_valid(board, empty_cell_i, cell_val);
+      cell_state = is_cell_valid(board, position, cell_val);
       if (cell_state) {
         /* fixe la valeur de la cellule vide */
-        board[empty_cell_i] = cell_val;
+        board[position] = cell_val;
         /* cellule vide suivante */
         empty_cell_i++;
         break;
@@ -119,7 +127,7 @@ void resolve(char *board) {
     /* if ((cell_val > CELL_VAL_MAX) && (!cell_state)) */
     if (!cell_state) {
       /* réinitialise cellule courante */
-      board[empty_cell_i] = 0;
+      board[position] = 0;
       empty_cell_i--;
     }
   }
@@ -127,6 +135,8 @@ void resolve(char *board) {
 
 int main(int argc, const char *argv[])
 {
+  /* chrono */
+  clock_t begin = clock();
   char board[BOARD_DIM * BOARD_DIM] = {
       0, 9, 3, 0, 5, 0, 0, 0, 4,
       0, 0, 7, 0, 0, 0, 0, 8, 0,
@@ -138,7 +148,24 @@ int main(int argc, const char *argv[])
       0, 7, 0, 0, 0, 0, 1, 0, 0,
       3, 0, 0, 0, 4, 0, 8, 7, 0};
 
-  printBoard(board);
-  resolve(board);
-  printBoard(board);
+  char board_diff[BOARD_DIM * BOARD_DIM] = {
+      0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 3, 0, 8, 5,
+      0, 0, 1, 0, 2, 0, 0, 0, 0,
+      0, 0, 0, 5, 0, 7, 0, 0, 0,
+      0, 0, 4, 0, 0, 0, 1, 0, 0,
+      0, 9, 0, 0, 0, 0, 0, 0, 0,
+      5, 0, 0, 0, 0, 0, 0, 7, 3,
+      0, 0, 2, 0, 1, 0, 0, 0, 0,
+      0, 0, 0, 0, 4, 0, 0, 0, 9};
+
+  printBoard(board_diff);
+  resolve(board_diff);
+
+  /* chrono */
+  clock_t end = clock();
+  double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
+  printf("Time: %f\nbacktracking=%ld\nGrille apres\n", time_spent);
+
+  printBoard(board_diff);
 }
