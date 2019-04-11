@@ -9,14 +9,16 @@ void printBoard(char *board);
 bool checkRow(char *board, char row, char value);
 bool checkColumn(char *board, char column, char value);
 bool checkBox(char *board, char row, char column, char value);
-bool is_cell_valid(char *board, int position);
+bool is_cell_valid(char *board, int position, char value);
 bool is_board_valid(char *board, int position);
 
 void printBoard(char *board)
 {
-  for (int i = 0; i < BOARD_DIM * BOARD_DIM; i++) {
+  for (int i = 0; i < BOARD_DIM * BOARD_DIM; i++)
+  {
     printf(((i + 1) % 3) ? "%d " : "%d|", board[i]);
-    if ((i + 1) % BOARD_DIM == 0) {
+    if ((i + 1) % BOARD_DIM == 0)
+    {
       printf("\n");
     }
   }
@@ -25,6 +27,7 @@ void printBoard(char *board)
 
 bool checkRow(char *board, char row, char value)
 {
+  printf("function checkRow\n\n");
   for (char column = 0; column < 9; column++)
     if (board[column + BOARD_DIM * row] == value)
       return false;
@@ -33,6 +36,7 @@ bool checkRow(char *board, char row, char value)
 
 bool checkColumn(char *board, char column, char value)
 {
+  printf("function checkColumn\n\n");
   for (char row = 0; row < 9; row++)
     if (board[column + BOARD_DIM * row] == value)
       return false;
@@ -43,18 +47,25 @@ bool checkBox(char *board, char row, char column, char value)
 {
   char _row = row - (row % 3);
   char _column = column - (column % 3);
+  printf("function checkBox\n_row = %d\n_column = %d\n\n", _row, _column);
   for (row = _row; row < _row + 3; row++)
+  {
     for (column = _column; column < _column + 3; column++)
+    {
+      printf("boucle for\nrow = %d\ncolumn = %d\n\n", row, column);
       if (board[column + BOARD_DIM * row] == value)
         return false;
+    }
+  }
+
   return true;
 }
 
-bool is_cell_valid(char *board, int position)
+bool is_cell_valid(char *board, int position, char value)
 {
   char row = position / 9;
   char column = position % 9;
-  char value = board[position];
+  //printf("function is_cell_valid\nposition = %d\nrow = %d\ncolumn = %d\nvalue = %d\n\n", position, row, column, value);
   if (checkRow(board, row, value) && checkColumn(board, position, value) && checkBox(board, row, column, value))
   {
     return true;
@@ -64,7 +75,7 @@ bool is_cell_valid(char *board, int position)
 
 bool is_board_valid(char *board, int position)
 {
-  return (position == BOARD_DIM * BOARD_DIM) && is_cell_valid(board, position);
+  return (position == BOARD_DIM * BOARD_DIM) && is_cell_valid(board, position, board[position]);
 }
 
 /* TODO: tester */
@@ -75,32 +86,41 @@ void resolve(char *board)
   int i = 0;
   while (!is_board_valid(board, i) && stack_i >= 0)
   {
-    printf("%d\n", i);
+    //printf("%d\n", i);
     if (board[i] == 0)
     {
       /* incrémente cellule jusqu'à valide */
       bool cell_state = false;
-      while ((board[i] <= CELL_VAL_MAX) && !cell_state)
+      for (char cell_val = 1; cell_val <= CELL_VAL_MAX; cell_val++)
       {
-        board[i]++;
-        cell_state = is_cell_valid(board, i);
+        cell_state = is_cell_valid(board, i, cell_val);
+        if (cell_state)
+        {
+          board[i] = cell_val;
+          /* ajout stack */
+          stack[stack_i] = i;
+          stack_i++;
+          /* cellule suivante */
+          i++;
+          printf("ajout stack\n");
+          break;
+        }
+        else
+        {
+          /* pop stack */
+          stack_i--;
+          i = stack[stack_i];
+          board[i]++;
+          i++;
+          /* réinitialise cellule courante */
+          board[i] = 0;
+        }
       }
-      if (cell_state)
-      {
-        /* ajout stack */
-        stack[stack_i] = i;
-        stack_i++;
-        /* cellule suivante */
-        i++;
-      }
-      else
-      {
-        /* pop stack */
-        stack_i--;
-        i = stack[stack_i];
-        /* réinitialise cellule courante */
-        board[i] = 0;
-      }
+    }
+    else
+    {
+      /* */
+      i++;
     } /* fin traitement cellule vide */
   }   /* fin parcourt cellules vides */
 }
