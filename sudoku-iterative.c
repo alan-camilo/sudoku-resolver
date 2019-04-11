@@ -9,6 +9,7 @@ void printBoard(char *board);
 bool checkRow(char *board, char row, char value);
 bool checkColumn(char *board, char column, char value);
 bool checkBox(char *board, char row, char column, char value);
+int get_empty_cells(char *empty_cell, char *board);
 bool is_cell_valid(char *board, int position, char value);
 bool is_board_valid(char *board, int position);
 
@@ -61,6 +62,19 @@ bool checkBox(char *board, char row, char column, char value)
   return true;
 }
 
+int get_empty_cells(char *empty_cell, char *board) {
+  int nb_empty_cells = 0;
+  int empty_cell_i = 0;
+  for (int i = 0; i < BOARD_DIM * BOARD_DIM; i++) {
+    if (board[i] == 0) {
+      empty_cell[empty_cell_i] = i;
+      empty_cell_i++;
+      nb_empty_cells++;
+    }
+  }
+  return nb_empty_cells;
+}
+
 bool is_cell_valid(char *board, int position, char value)
 {
   char row = position / 9;
@@ -82,6 +96,10 @@ bool is_board_valid(char *board, int position)
 
 void resolve(char *board)
 {
+  /* récupère index et nombre de cellules vides */
+  char empty_cell[BOARD_DIM * BOARD_DIM] = 0;
+  int nb_empty_cells = get_empty_cells(empty_cell, board);
+
   /* parcourt cellules vides */
   int i = 0;
   while (!is_board_valid(board, i) && stack_i >= 0)
