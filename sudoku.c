@@ -1,6 +1,6 @@
 #define PROGRAM_FILE "sudoku.cl"
-#define KERNEL_FUNC "sudoku"
-#define ARRAY_SIZE 64
+#define KERNEL_FUNC "resolve"
+#define BOARD_DIM 9
 
 #include <math.h>
 #include <stdio.h>
@@ -13,6 +13,23 @@
 #else
 #include <CL/cl.h>
 #endif
+
+
+void printBoard(char *board)
+{
+  for (int i = 0; i < BOARD_DIM * BOARD_DIM; i++)
+  {
+    printf(((i + 1) % 3) ? "%d " : "%d|", board[i]);
+    if ((i + 1) % BOARD_DIM == 0)
+    {
+      printf("\n");
+    }
+    if (!((i + 1) % 27)) {
+      puts("------------------");
+    }
+  }
+  puts("\n");
+}
 
 /* Find a GPU or CPU associated with the first available platform */
 cl_device_id create_device() {
@@ -104,15 +121,21 @@ int main() {
    size_t local_size, global_size;
 
    /* Data and buffers */
-   float data[ARRAY_SIZE];
-   float sum[2], total, actual_sum;
-   cl_mem input_buffer, sum_buffer;
+   char result[BOARD_DIM * BOARD_DIM] = {0};
+   cl_mem input_buffer, result_buffer;
    cl_int num_groups;
 
    /* Initialize data */
-   for(i=0; i<ARRAY_SIZE; i++) {
-      data[i] = 1.0f*i;
-   }
+   char data[BOARD_DIM * BOARD_DIM] = {
+      0, 9, 3, 0, 5, 0, 0, 0, 4,
+      0, 0, 7, 0, 0, 0, 0, 8, 0,
+      5, 6, 0, 9, 0, 0, 0, 0, 7,
+      0, 8, 0, 0, 3, 9, 4, 2, 0,
+      0, 4, 0, 8, 2, 7, 0, 3, 0,
+      0, 3, 5, 6, 1, 0, 0, 9, 0,
+      9, 0, 0, 0, 0, 5, 0, 4, 2,
+      0, 7, 0, 0, 0, 0, 1, 0, 0,
+      3, 0, 0, 0, 4, 0, 8, 7, 0};
 
    /* Create device and context */
    device = create_device();
@@ -126,13 +149,13 @@ int main() {
    program = build_program(context, device, PROGRAM_FILE);
 
    /* Create data buffer */
-   global_size = 8;
-   local_size = 4;
+   global_size = 1;
+   local_size = 1;
    num_groups = global_size/local_size;
    input_buffer = clCreateBuffer(context, CL_MEM_READ_ONLY |
-         CL_MEM_COPY_HOST_PTR, ARRAY_SIZE * sizeof(float), data, &err);
-   sum_buffer = clCreateBuffer(context, CL_MEM_READ_WRITE |
-         CL_MEM_COPY_HOST_PTR, num_groups * sizeof(float), sum, &err);
+         CL_MEM_COPY_HOST_PTR, BOARD_DIM * BOARD_DIM * sizeof(char), data, &err);
+   result_buffer = clCreateBuffer(context, CL_MEM_READ_WRITE |
+         CL_MEM_COPY_HOST_PTR, BOARD_DIM * BOARD_DIM * sizeof(char), result, &err);
    if(err < 0) {
       perror("Couldn't create a buffer");
       exit(1);   
@@ -154,12 +177,14 @@ int main() {
 
    /* Create kernel arguments */
    err = clSetKernelArg(kernel, 0, sizeof(cl_mem), &input_buffer);
-   err |= clSetKernelArg(kernel, 1, local_size * sizeof(float), NULL);
-   err |= clSetKernelArg(kernel, 2, sizeof(cl_mem), &sum_buffer);
+   err |= clSetKernelArg(kernel, 1, sizeof(cl_mem), &result_buffer);
    if(err < 0) {
       perror("Couldn't create a kernel argument");
       exit(1);
    }
+
+   /* start timer */
+   clock_t begin = clock();
 
    /* Enqueue kernel */
    err = clEnqueueNDRangeKernel(queue, kernel, 1, NULL, &global_size, 
@@ -170,12 +195,18 @@ int main() {
    }
 
    /* Read the kernel's output */
-   err = clEnqueueReadBuffer(queue, sum_buffer, CL_TRUE, 0, 
-         sizeof(sum), sum, 0, NULL, NULL);
+   err = clEnqueueReadBuffer(queue, result_buffer, CL_TRUE, 0, 
+         sizeof(result), result, 0, NULL, NULL);
    if(err < 0) {
       perror("Couldn't read the buffer");
       exit(1);
    }
+
+   /* Print result board and time elpased */
+   clock_t end = clock();
+   double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
+   printf("Time: %f\nGrille apres\n", time_spent);
+   printBoard(result);
 
    /* Check result */
    // total = 0.0f;
@@ -189,12 +220,12 @@ int main() {
    // else
    //    printf("Check passed.\n");
 
-   // /* Deallocate resources */
-   // clReleaseKernel(kernel);
-   // clReleaseMemObject(sum_buffer);
-   // clReleaseMemObject(input_buffer);
-   // clReleaseCommandQueue(queue);
-   // clReleaseProgram(program);
-   // clReleaseContext(context);
-   // return 0;
+   /* Deallocate resources */
+   clReleaseKernel(kernel);
+   clReleaseMemObject(result_buffer);
+   clReleaseMemObject(input_buffer);
+   clReleaseCommandQueue(queue);
+   clReleaseProgram(program);
+   clReleaseContext(context);
+   return 0;
 }
