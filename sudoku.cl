@@ -1,61 +1,89 @@
-// Fonction d'affichage
-void printBoard(char board[9][9]) {
-    for (char i=0; i<9; i++) {
-        for (char j=0; j<9; j++) {
-            prcharf( ((j+1)%3) ? "%d " : "%d|", board[i][j]);
-        }
-        putchar('\n');
-        if (!((i+1)%3))
-            puts("------------------");
+#define BOARD_DIM 9
+#define CELL_VAL_MAX 9
+
+void printBoard(char *board)
+{
+  for (int i = 0; i < BOARD_DIM * BOARD_DIM; i++)
+  {
+    printf(((i + 1) % 3) ? "%d " : "%d|", board[i]);
+    if ((i + 1) % BOARD_DIM == 0)
+    {
+      printf("\n");
     }
-    puts("\n\n");
-}
-
-bool checkRow(char k, char board[9][9], char i) {
-    for (char j=0; j < 9; j++)
-        if (board[i][j] == k)
-            return false;
-    return true;
-}
-
-bool checkColumn(char k, char board[9][9], char j) {
-    for (char i=0; i < 9; i++)
-        if (board[i][j] == k)
-            return false;
-    return true;
-}
-
-bool checkBox(char k, char board[9][9], char i, char j) {
-    char _i = i-(i%3), _j = j-(j%3);
-    for (i=_i; i < _i+3; i++)
-        for (j=_j; j < _j+3; j++)
-            if (board[i][j] == k)
-                return false;
-    return true;
-}
-
-bool isValid(char board[9][9], char position) {
-    if (position == 9*9)
-        return true;
-
-    char i = position/9, j = position%9; /* i: row, j: column */
-
-    if (board[i][j] != 0)
-        return isValid(board, position+1); 
-    for (char k=1; k <= 9; k++) {
-        if (checkRow(k,board,i) && checkColumn(k,board,j) && checkBox(k,board,i,j)) {
-            board[i][j] = k;
-
-            if (isValid(board, position+1))
-                return true;
-        }
+    if (!((i + 1) % 27)) {
+      printf("------------------");
     }
-    board[i][j] = 0;
-
-    return false;
+  }
+  printf("\n");
 }
 
-__kernel void add_numbers(__global float4* data, 
-      __local float* local_result, __global float* group_result) { 
+bool checkRow(char *board, char row, char value)
+{
+  for (char column = 0; column < 9; column++)
+    if (board[column + BOARD_DIM * row] == value)
+      return false;
+  return true;
+}
+
+bool checkColumn(char *board, char column, char value)
+{
+  for (char row = 0; row < 9; row++)
+    if (board[column + BOARD_DIM * row] == value)
+      return false;
+  return true;
+}
+
+bool checkBox(char *board, char row, char column, char value)
+{
+  char _row = row - (row % 3);
+  char _column = column - (column % 3);
+  for (row = _row; row < _row + 3; row++)
+  {
+    for (column = _column; column < _column + 3; column++)
+    {
+      if (board[column + BOARD_DIM * row] == value)
+        return false;
+    }
+  }
+
+  return true;
+}
+
+int get_empty_cells(char *empty_cell, char *board) {
+  int nb_empty_cells = 0;
+  int empty_cell_i = 0;
+  for (int i = 0; i < BOARD_DIM * BOARD_DIM; i++) {
+    if (board[i] == 0) {
+      empty_cell[empty_cell_i] = i;
+      empty_cell_i++;
+      nb_empty_cells++;
+    }
+  }
+  return nb_empty_cells;
+}
+
+bool is_cell_valid(char *board, int position, char value)
+{
+  char row = position / 9;
+  char column = position % 9;
+  if (checkRow(board, row, value) && checkColumn(board, column, value) && checkBox(board, row, column, value))
+  {
+    return true;
+  }
+  return false;
+}
+
+bool is_board_valid(char *board, int position)
+{
+  return (position == BOARD_DIM * BOARD_DIM) && is_cell_valid(board, position, board[position]);
+}
+
+__kernel void resolve(__global float4* data, 
+      __local float* local_result, __global float* group_result) {
           uint local_addr = get_local_id(0);
-      }
+}
+
+// __kernel void add_numbers(__global float4* data, 
+//       __local float* local_result, __global float* group_result) {
+//           uint local_addr = get_local_id(0);
+// }
