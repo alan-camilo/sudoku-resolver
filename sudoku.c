@@ -149,7 +149,7 @@ int main() {
    program = build_program(context, device, PROGRAM_FILE);
 
    /* Create data buffer */
-   global_size = 1;
+   global_size = 9;
    local_size = 1;
    num_groups = global_size/local_size;
    input_buffer = clCreateBuffer(context, CL_MEM_READ_ONLY |
@@ -202,23 +202,11 @@ int main() {
       exit(1);
    }
 
-   /* Print result board and time elpased */
+   /* Print result board and time elapsed */
    clock_t end = clock();
    double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
    printf("Time: %f\nGrille apres\n", time_spent);
    printBoard(result);
-
-   /* Check result */
-   // total = 0.0f;
-   // for(j=0; j<num_groups; j++) {
-   //    total += sum[j];
-   // }
-   // actual_sum = 1.0f * ARRAY_SIZE/2*(ARRAY_SIZE-1);
-   // printf("Computed sum = %.1f.\n", total);
-   // if(fabs(total - actual_sum) > 0.01*fabs(actual_sum))
-   //    printf("Check failed.\n");
-   // else
-   //    printf("Check passed.\n");
 
    /* Deallocate resources */
    clReleaseKernel(kernel);
