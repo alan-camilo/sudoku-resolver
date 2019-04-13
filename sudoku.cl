@@ -50,13 +50,22 @@ int get_empty_cells(char *board, char *empty_cell) {
   int nb_empty_cells = 0;
   int empty_cell_i = 0;
   bool first_empty_cell = true;
+  bool second_empty_cell = true;
   for (int i = 0; i < BOARD_DIM * BOARD_DIM; i++) {
     if (board[i] == 0) {
-      /* */
+      /* première case vide -> group_id s'il est valide */
       if (first_empty_cell) {
-        if (is_cell_valid(board, i, (char)(get_global_id(0) + 1))) {
-          board[i] = get_global_id(0) + 1;
+        if (is_cell_valid(board, i, (char)(get_group_id(0) + 1))) {
+          board[i] = get_group_id(0) + 1;
           first_empty_cell = false;
+        } else {
+          return -1;
+        }
+      /* seconde case vide -> local_id s'il est valide */
+      } else if (second_empty_cell) {
+        if (is_cell_valid(board, i, (char)(get_local_id(0) + 1))) {
+          board[i] = get_local_id(0) + 1;
+          second_empty_cell = false;
         } else {
           return -1;
         }
@@ -82,7 +91,6 @@ __kernel void resolve(__global char* board, __global char* group_result) {
 
   /* parcourt cellules vides */
   int empty_cell_i = 0;
-  /* */
   if (nb_empty_cells > -1) {
     while ((empty_cell_i >= 0) && (empty_cell_i < nb_empty_cells)) {
       /* incrémente cellule jusqu'à valide */
@@ -110,10 +118,9 @@ __kernel void resolve(__global char* board, __global char* group_result) {
 
   /* ce work item a trouvé la solution */
   if (empty_cell_i > 0) {
-    /* copie de la grille résolue dans la variable output */
+    /* copie la grille résolue dans la variable output */
     for (int i = 0; i < BOARD_DIM * BOARD_DIM; i++) {
         group_result[i] = local_board[i];
-        //group_result[i] = empty_cell[i];
     }
   }
 }

@@ -127,15 +127,15 @@ int main() {
 
    /* Initialize data */
    char data[BOARD_DIM * BOARD_DIM] = {
-      0, 9, 3, 0, 5, 0, 0, 0, 4,
-      0, 0, 7, 0, 0, 0, 0, 8, 0,
-      5, 6, 0, 9, 0, 0, 0, 0, 7,
-      0, 8, 0, 0, 3, 9, 4, 2, 0,
-      0, 4, 0, 8, 2, 7, 0, 3, 0,
-      0, 3, 5, 6, 1, 0, 0, 9, 0,
-      9, 0, 0, 0, 0, 5, 0, 4, 2,
-      0, 7, 0, 0, 0, 0, 1, 0, 0,
-      3, 0, 0, 0, 4, 0, 8, 7, 0};
+      0, 0, 8, 0, 0, 0, 0, 0, 0,
+      4, 5, 0, 8, 0, 0, 0, 6, 2,
+      0, 3, 0, 6, 0, 0, 0, 4, 0,
+      0, 8, 0, 0, 3, 1, 7, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 5, 7, 8, 0, 0, 3, 0,
+      0, 4, 0, 0, 0, 6, 0, 2, 0,
+      2, 9, 0, 0, 0, 8, 0, 5, 6,
+      0, 0, 0, 0, 0, 0, 3, 0, 0,};
 
    /* Create device and context */
    device = create_device();
@@ -149,8 +149,8 @@ int main() {
    program = build_program(context, device, PROGRAM_FILE);
 
    /* Create data buffer */
-   global_size = 9;
-   local_size = 1;
+   global_size = BOARD_DIM * BOARD_DIM;
+   local_size = BOARD_DIM;
    num_groups = global_size/local_size;
    input_buffer = clCreateBuffer(context, CL_MEM_READ_ONLY |
          CL_MEM_COPY_HOST_PTR, BOARD_DIM * BOARD_DIM * sizeof(char), data, &err);
