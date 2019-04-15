@@ -51,21 +51,52 @@ int get_empty_cells(char *board, char *empty_cell) {
   int empty_cell_i = 0;
   bool first_empty_cell = true;
   bool second_empty_cell = true;
+  bool third_empty_cell = true;
+  bool fourth_empty_cell = true;
+  bool fifth_empty_cell = true;
+  bool sixth_empty_cell = true;
   for (int i = 0; i < BOARD_DIM * BOARD_DIM; i++) {
     if (board[i] == 0) {
       /* première case vide -> group_id s'il est valide */
       if (first_empty_cell) {
-        if (is_cell_valid(board, i, (char)(get_group_id(0) + 1))) {
-          board[i] = get_group_id(0) + 1;
+        if (is_cell_valid(board, i, (char)(get_group_id(0) / 729 % 9 + 1))) {
+          board[i] = get_group_id(0) / 729 % 9 + 1;
           first_empty_cell = false;
         } else {
           return -1;
         }
-      /* seconde case vide -> local_id s'il est valide */
       } else if (second_empty_cell) {
-        if (is_cell_valid(board, i, (char)(get_local_id(0) + 1))) {
-          board[i] = get_local_id(0) + 1;
+        if (is_cell_valid(board, i, (char)(get_group_id(0) / 81 % 9 + 1))) {
+          board[i] = get_group_id(0) / 81 % 9 + 1;
           second_empty_cell = false;
+        } else {
+          return -1;
+        }
+      } else if (third_empty_cell) {
+        if (is_cell_valid(board, i, (char)(get_group_id(0) / 9 % 9 + 1))) {
+          board[i] = get_group_id(0) / 9 % 9 + 1;
+          third_empty_cell = false;
+        } else {
+          return -1;
+        }
+      } else if (fourth_empty_cell) {
+        if (is_cell_valid(board, i, (char)(get_group_id(0) % 9 + 1))) {
+          board[i] = get_group_id(0) % 9 + 1;
+          fourth_empty_cell = false;
+        } else {
+          return -1;
+        }
+      } else if (fifth_empty_cell) {
+        if (is_cell_valid(board, i, (char)(get_local_id(0) / 9 + 1))) {
+          board[i] = get_local_id(0) / 9 + 1;
+          fifth_empty_cell = false;
+        } else {
+          return -1;
+        }
+      } else if (sixth_empty_cell) {
+        if (is_cell_valid(board, i, (char)(get_local_id(0) % 9 + 1))) {
+          board[i] = get_local_id(0) % 9 + 1;
+          sixth_empty_cell = false;
         } else {
           return -1;
         }

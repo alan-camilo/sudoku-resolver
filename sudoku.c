@@ -127,16 +127,15 @@ int main() {
 
    /* Initialize data */
    char data[BOARD_DIM * BOARD_DIM] = {
-      0, 0, 8, 0, 0, 0, 0, 0, 0,
-      4, 5, 0, 8, 0, 0, 0, 6, 2,
-      0, 3, 0, 6, 0, 0, 0, 4, 0,
-      0, 8, 0, 0, 3, 1, 7, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0,
-      0, 0, 5, 7, 8, 0, 0, 3, 0,
-      0, 4, 0, 0, 0, 6, 0, 2, 0,
-      2, 9, 0, 0, 0, 8, 0, 5, 6,
-      0, 0, 0, 0, 0, 0, 3, 0, 0,};
-
+      0, 0, 0, 0, 0, 3, 0, 8, 5,
+      0, 0, 1, 0, 2, 0, 0, 0, 0,
+      0, 0, 0, 5, 0, 7, 0, 0, 0,
+      0, 0, 4, 0, 0, 0, 1, 0, 0,
+      0, 9, 0, 0, 0, 0, 0, 0, 0,
+      5, 0, 0, 0, 0, 0, 0, 7, 3,
+      0, 0, 2, 0, 1, 0, 0, 0, 0,
+      0, 0, 0, 0, 4, 0, 0, 0, 9};
    /* Create device and context */
    device = create_device();
    context = clCreateContext(NULL, 1, &device, NULL, NULL, &err);
@@ -149,8 +148,8 @@ int main() {
    program = build_program(context, device, PROGRAM_FILE);
 
    /* Create data buffer */
-   global_size = BOARD_DIM * BOARD_DIM;
-   local_size = BOARD_DIM;
+   global_size = BOARD_DIM * BOARD_DIM * BOARD_DIM * BOARD_DIM * BOARD_DIM * BOARD_DIM;
+   local_size = BOARD_DIM * BOARD_DIM;
    num_groups = global_size/local_size;
    input_buffer = clCreateBuffer(context, CL_MEM_READ_ONLY |
          CL_MEM_COPY_HOST_PTR, BOARD_DIM * BOARD_DIM * sizeof(char), data, &err);
@@ -162,7 +161,7 @@ int main() {
    };
 
    /* Create a command queue */
-   queue = clCreateCommandQueue(context, device, 0, &err);
+   queue = clCreateCommandQueue(context, device, CL_QUEUE_PROFILING_ENABLE, &err);
    if(err < 0) {
       perror("Couldn't create a command queue");
       exit(1);   
@@ -186,9 +185,11 @@ int main() {
    /* start timer */
    clock_t begin = clock();
 
+   /* profile kernel */
+   cl_event prof_event; 
    /* Enqueue kernel */
    err = clEnqueueNDRangeKernel(queue, kernel, 1, NULL, &global_size, 
-         &local_size, 0, NULL, NULL); 
+         &local_size, 0, NULL, &prof_event); 
    if(err < 0) {
       perror("Couldn't enqueue the kernel");
       exit(1);
@@ -202,10 +203,20 @@ int main() {
       exit(1);
    }
 
-   /* Print result board and time elapsed */
-   clock_t end = clock();
-   double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
-   printf("Time: %f\nGrille apres\n", time_spent);
+   cl_ulong ev_start_time=(cl_ulong)0;     
+   cl_ulong ev_end_time=(cl_ulong)0;   
+
+   /* recup runtime gpu */
+   clFinish(queue);
+   err = clWaitForEvents(1, &prof_event);
+   err |= clGetEventProfilingInfo(prof_event, CL_PROFILING_COMMAND_START, sizeof(cl_ulong), &ev_start_time, NULL);
+   err |= clGetEventProfilingInfo(prof_event, CL_PROFILING_COMMAND_END, sizeof(cl_ulong), &ev_end_time, NULL);
+
+   float run_time_gpu = (float)(ev_end_time - ev_start_time)/1000000000; // in sec
+   printf("Runtime gpu = %f secondes\n", run_time_gpu);
+
+   /* print solution */
+   printf("Grille apres\n");
    printBoard(result);
 
    /* Deallocate resources */
