@@ -1,0 +1,17 @@
+graph {
+  root[label=""];
+
+  node1[label="1"];
+  node12[label="2"];
+  node124[label="4"];
+  node1248[label="8",style=filled,fillcolor=red];
+  node1249[label="9",style=filled,fillcolor=green];
+  node12489[label="9",style=filled,fillcolor=red];
+  node124899[label="9",style=filled,fillcolor=red];
+
+  root--node1--node12--node124--node1249[color=darkgreen,penwidth=3.0];
+
+  node124--node1248--node12489--node124899;
+
+  stack[shape=record,label="{pile|résoudre(1)|résoudre(2)|résoudre(3)|résoudre(4)}"]
+}

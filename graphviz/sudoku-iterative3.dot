@@ -1,0 +1,28 @@
+graph {
+  root[label=""];
+
+  node1[label="1"];
+  node12[label="2"];
+  node124[label="4"];
+  node1248[label="8",style=filled,fillcolor=red];
+  node1249[label="9",style=filled,fillcolor=green];
+  node12489[label="9",style=filled,fillcolor=red];
+  node124899[label="9",style=filled,fillcolor=red];
+
+  root--node1--node12--node124--node1249[color=darkgreen,penwidth=3.0];
+
+  node124--node1248--node12489--node124899;
+
+  list[shape=plaintext,label=<
+     <table border="0" cellborder="1" cellspacing="0">
+       <tr><td>Liste</td></tr>
+       <tr><td>1</td></tr>
+       <tr><td>2</td></tr>
+       <tr><td>3</td></tr>
+       <tr><td bgcolor="green">4</td></tr>
+       <tr><td>5</td></tr>
+       <tr><td>6</td></tr>
+       <tr><td>7</td></tr>
+       <tr><td>...</td></tr>
+     </table>>]
+}
