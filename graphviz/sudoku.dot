@@ -1,0 +1,30 @@
+graph {
+  root[label="0"];
+
+  node1[label="1"];
+  nodex[label="..."];
+  node9[label="9"];
+
+  node11[label="1"];
+  node1x[label="..."];
+  node19[label="9"];
+
+  node91[label="1"];
+  node9x[label="..."];
+  node99[label="9"];
+
+  root--{node1,nodex,node9};
+  node1--{node11,node1x,node19};
+  node9--{node91,node9x,node99};
+
+  subgraph cluster_1 {
+    label="cell 1";
+    {node1,nodex,node9};
+  }
+
+  subgraph cluster_2 {
+    label="cell 2";
+    {node11,node1x,node19};
+    {node91,node9x,node99};
+  }
+}
