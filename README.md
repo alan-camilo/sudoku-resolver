@@ -1,6 +1,1 @@
-Implementation of J.F. Crook's algorithm.
-
-"A Pencil-and-Paper Algorithm for Solving Sudoku Puzzles":
-
-https://www.ams.org/notices/200904/rtx090400460p.pdf
-
+This sudoku resolver uses OpenCL and a backtracking algorithm to smartly resolve Sudoku grids given as input. The project also includes iterative and recursive versions of the backtracking algorithm.
