@@ -49,54 +49,26 @@ bool is_cell_valid(char *board, int position, char value)
 int get_empty_cells(char *board, char *empty_cell) {
   int nb_empty_cells = 0;
   int empty_cell_i = 0;
-  bool first_empty_cell = true;
-  bool second_empty_cell = true;
-  bool third_empty_cell = true;
-  bool fourth_empty_cell = true;
-  bool fifth_empty_cell = true;
-  bool sixth_empty_cell = true;
+  double depth = 6;
+  int n = BOARD_DIM;
+  int m = (int) pow(BOARD_DIM, 3.0);
   for (int i = 0; i < BOARD_DIM * BOARD_DIM; i++) {
     if (board[i] == 0) {
-      /* première case vide -> group_id s'il est valide */
-      if (first_empty_cell) {
-        if (is_cell_valid(board, i, (char)(get_group_id(0) / 729 % 9 + 1))) {
-          board[i] = get_group_id(0) / 729 % 9 + 1;
-          first_empty_cell = false;
+      /* remplir les premières cases vides grace au global_id */
+      if (depth > 2) {
+        if (is_cell_valid(board, i, (char)(get_group_id(0) / m % BOARD_DIM + 1))) {
+          board[i] = (char) (get_group_id(0) / m % BOARD_DIM + 1);
+          depth--;
+          m = m / 9;
         } else {
           return -1;
         }
-      } else if (second_empty_cell) {
-        if (is_cell_valid(board, i, (char)(get_group_id(0) / 81 % 9 + 1))) {
-          board[i] = get_group_id(0) / 81 % 9 + 1;
-          second_empty_cell = false;
-        } else {
-          return -1;
-        }
-      } else if (third_empty_cell) {
-        if (is_cell_valid(board, i, (char)(get_group_id(0) / 9 % 9 + 1))) {
-          board[i] = get_group_id(0) / 9 % 9 + 1;
-          third_empty_cell = false;
-        } else {
-          return -1;
-        }
-      } else if (fourth_empty_cell) {
-        if (is_cell_valid(board, i, (char)(get_group_id(0) % 9 + 1))) {
-          board[i] = get_group_id(0) % 9 + 1;
-          fourth_empty_cell = false;
-        } else {
-          return -1;
-        }
-      } else if (fifth_empty_cell) {
-        if (is_cell_valid(board, i, (char)(get_local_id(0) / 9 + 1))) {
-          board[i] = get_local_id(0) / 9 + 1;
-          fifth_empty_cell = false;
-        } else {
-          return -1;
-        }
-      } else if (sixth_empty_cell) {
-        if (is_cell_valid(board, i, (char)(get_local_id(0) % 9 + 1))) {
-          board[i] = get_local_id(0) % 9 + 1;
-          sixth_empty_cell = false;
+      /* remplir les premières cases vides grace au local_id */
+      } else if (depth <= 2 && depth > 0) {
+        if (is_cell_valid(board, i, (char)(get_local_id(0) / n % BOARD_DIM + 1))) {
+          board[i] = get_local_id(0) / n % BOARD_DIM + 1;
+          depth--;
+          n = n / BOARD_DIM;
         } else {
           return -1;
         }
@@ -104,7 +76,7 @@ int get_empty_cells(char *board, char *empty_cell) {
         empty_cell[empty_cell_i] = i;
         empty_cell_i++;
         nb_empty_cells++;
-      }
+      }     
     }
   }
   return nb_empty_cells;

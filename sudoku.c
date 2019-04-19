@@ -148,7 +148,7 @@ int main() {
    program = build_program(context, device, PROGRAM_FILE);
 
    /* Create data buffer */
-   global_size = BOARD_DIM * BOARD_DIM * BOARD_DIM * BOARD_DIM * BOARD_DIM * BOARD_DIM;
+   global_size = (int) pow(BOARD_DIM, 6.0);
    local_size = BOARD_DIM * BOARD_DIM;
    num_groups = global_size/local_size;
    input_buffer = clCreateBuffer(context, CL_MEM_READ_ONLY |
